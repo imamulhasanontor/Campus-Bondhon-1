@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clothing Resources | Campus Bondhon — Team Bondhon</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ========================================================================
+       NAVIGATION BAR (Edit University / Team links here)
+       ======================================================================== -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-logo-badge">CB</span>
+        <div>
+          Campus Bondhon
+          <span class="brand-subtitle">By Team Bondhon</span>
+        </div>
+      </a>
+
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle Menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="">🏠 Home</a></li>
+        <li><a href="study.html" class="">📚 Study Resources</a></li>
+        <li><a href="clothing.html" class="active">👕 Clothing Resources</a></li>
+        <li><a href="landlords.html" class="">🏢 Landlords Profile</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>👕 Clothing Resources (Dignified & Anonymous)</h1>
+      <p>
+        Donate clean, gently used or surplus clothes to fellow students. Every item here is 100% FREE, and personal identities are never exposed publicly—allowing receivers to collect items discreetly without hesitation.
+      </p>
+    </div>
+  </section>
+
+  <main class="container" style="margin-bottom: var(--space-xl);">
+    <!-- PRIVACY NOTICE BANNER -->
+    <div class="panel" style="background-color: var(--primary-light); border-color: var(--primary-color);">
+      <strong>🛡️ Campus Bondhon Privacy Guarantee:</strong>
+      <span style="font-size: var(--font-size-sm); color: var(--text-main);">
+        We never display a donor's or receiver's real name, student ID, or hall room publicly. All donations appear under "Bondhon Donor" or a generic alias, and pickup can be arranged via a neutral campus drop-off point.
+      </span>
+    </div>
+
+    <!-- DONATE CLOTHES FORM -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Donate Surplus or Gently Used Clothes</h2>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+            All items listed on this page are strictly free of cost.
+          </p>
+        </div>
+        <span class="badge badge-free">100% Free & Anonymous</span>
+      </div>
+
+      <form id="clothing-post-form" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="clothing-title">Item Title *</label>
+            <input type="text" id="clothing-title" class="form-control" placeholder="e.g., Warm Winter Jacket / 2 Cotton Shirts" required />
+          </div>
+
+          <div class="form-group">
+            <label for="clothing-type">Clothing Type *</label>
+            <select id="clothing-type" class="form-control" required>
+              <option value="Winter Wear / Hoodie">Winter Wear / Hoodie</option>
+              <option value="Shirt / T-Shirt">Shirt / T-Shirt</option>
+              <option value="Trousers / Jeans">Trousers / Jeans</option>
+              <option value="Traditional / Everyday">Traditional / Salwar Kameez / Panjabi</option>
+              <option value="Formal / Presentation Wear">Formal / Presentation Wear</option>
+              <option value="Shoes / Accessories">Shoes / Accessories</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clothing-size">Size *</label>
+            <select id="clothing-size" class="form-control" required>
+              <option value="S">S (Small)</option>
+              <option value="M" selected>M (Medium)</option>
+              <option value="L">L (Large)</option>
+              <option value="XL">XL (Extra Large)</option>
+              <option value="XXL">XXL</option>
+              <option value="Free Size">Free Size / Universal</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clothing-condition">Condition *</label>
+            <select id="clothing-condition" class="form-control" required>
+              <option value="Like New">Like New (Washed & Ready)</option>
+              <option value="Very Good">Very Good</option>
+              <option value="Good">Good (Clean & Wearable)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clothing-whatsapp">Coordinator / Donor WhatsApp Number *</label>
+            <input type="tel" id="clothing-whatsapp" class="form-control" placeholder="e.g., 01712345678" required />
+            <small>Used only when a receiver clicks the WhatsApp pickup button.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="clothing-alias">Public Display Alias (Identity Protected)</label>
+            <input type="text" id="clothing-alias" class="form-control" value="Bondhon Donor" disabled />
+            <label class="checkbox-pill" style="margin-top: 0.35rem;">
+              <input type="checkbox" id="clothing-anonymous" checked />
+              Post as Anonymous ("Bondhon Donor")
+            </label>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="clothing-photos">Upload Photo(s) (Optional, max 2 MB each)</label>
+            <input type="file" id="clothing-photos" class="form-control" accept="image/*" multiple />
+            <div id="clothing-photo-preview" class="image-preview-list"></div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="clothing-desc">Short Description & Pickup Note *</label>
+            <textarea id="clothing-desc" class="form-control" placeholder="Describe the fabric/fit and preferred discreet handover point (e.g., Hall Gate, TSC Locker, or Bondhon Volunteer Desk)..." required></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-md);">
+          <button type="submit" class="btn btn-primary">Donate Clothes Now</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- FILTER BAR -->
+    <section aria-label="Filter Clothing Donations">
+      <div class="filter-bar" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <input type="search" id="clothing-search" class="form-control" placeholder="🔍 Search hoodies, formal shirt, winter wear..." />
+        <select id="filter-clothing-type" class="form-control">
+          <option value="All">All Clothing Types</option>
+          <option value="Winter Wear / Hoodie">Winter Wear / Hoodie</option>
+          <option value="Shirt / T-Shirt">Shirt / T-Shirt</option>
+          <option value="Trousers / Jeans">Trousers / Jeans</option>
+          <option value="Traditional / Everyday">Traditional / Everyday</option>
+          <option value="Formal / Presentation Wear">Formal / Presentation Wear</option>
+          <option value="Shoes / Accessories">Shoes / Accessories</option>
+        </select>
+        <select id="filter-clothing-size" class="form-control">
+          <option value="All">All Sizes</option>
+          <option value="S">Size S</option>
+          <option value="M">Size M</option>
+          <option value="L">Size L</option>
+          <option value="XL">Size XL</option>
+          <option value="XXL">Size XXL</option>
+          <option value="Free Size">Free Size</option>
+        </select>
+      </div>
+      <p id="clothing-results-count" style="font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: var(--space-sm);"></p>
+    </section>
+
+    <!-- CLOTHING LISTINGS GRID -->
+    <section id="clothing-listings-grid" class="grid-cards"></section>
+  </main>
+
+  <!-- ========================================================================
+       FOOTER (EDIT HERE: Change Team Contact Details, Email & University Name)
+       ======================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-title">Campus Bondhon — Team Bondhon</div>
+          <p style="font-size: var(--font-size-sm); color: #94a3b8; max-width: 380px;">
+            A student-first community hub connecting university peers to share books and notes, donate clothing with complete dignity, and find verified student housing near campus.
+          </p>
+        </div>
+        <div>
+          <div class="footer-title">Quick Sections</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Home Page</a></li>
+            <li><a href="study.html">Study Resources (Books & Notes)</a></li>
+            <li><a href="clothing.html">Clothing Resources (Anonymous Donation)</a></li>
+            <li><a href="landlords.html">Landlords Profile (Vacant Rooms & Flats)</a></li>
+          </ul>
+        </div>
+        <div>
+          <!-- EDIT HERE: Replace with your team's real email, phone, and university name -->
+          <div class="footer-title">Contact Team Bondhon</div>
+          <ul class="footer-links">
+            <li>📧 Email: teambondhon@university.edu.bd</li>
+            <li>💬 WhatsApp Support: +880 1700-000000</li>
+            <li>📍 Campus Hub: Student TSC, University Campus</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Campus Bondhon. Built with care by <strong>Team Bondhon</strong>.</span>
+        <span>Hosted on GitHub Pages • Powered by Firebase</span>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="js/clothing.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// ============================================================================
+// CAMPUS BONDHON - FIREBASE STORAGE SECURITY RULES (storage.rules)
+// Paste these rules in Firebase Console -> Storage -> Rules tab
+// ============================================================================
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper: Only allow image files under 2 MB
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*')
+             && request.resource.size <= 2 * 1024 * 1024;
+    }
+
+    // Study and Clothing Resource Photos
+    match /study/{allPaths=**} {
+      allow read: if true;
+      allow write: if isValidImage();
+    }
+
+    match /clothing/{allPaths=**} {
+      allow read: if true;
+      allow write: if isValidImage();
+    }
+
+    // Landlord Building Photos (requires logged-in landlord)
+    match /landlords/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && isValidImage();
+    }
+  }
+}

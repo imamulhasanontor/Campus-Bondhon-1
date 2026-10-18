@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landlords Profile & Student Housing | Campus Bondhon — Team Bondhon</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ========================================================================
+       NAVIGATION BAR (Edit University / Team links here)
+       ======================================================================== -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-logo-badge">CB</span>
+        <div>
+          Campus Bondhon
+          <span class="brand-subtitle">By Team Bondhon</span>
+        </div>
+      </a>
+
+      <button type="button" class="menu-toggle" id="mobile-menu-btn" aria-label="Toggle Menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="">🏠 Home</a></li>
+        <li><a href="study.html" class="">📚 Study Resources</a></li>
+        <li><a href="clothing.html" class="">👕 Clothing Resources</a></li>
+        <li><a href="landlords.html" class="active">🏢 Landlords Profile</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>🏢 Landlords Profile & Student Housing</h1>
+      <p>
+        Landlords near the university can create and update verified building profiles showing vacant rooms, shared seats, and flats. Students can filter by availability and rent range, and contact landlords directly.
+      </p>
+    </div>
+  </section>
+
+  <main class="container" style="margin-bottom: var(--space-xl);">
+    <!-- ======================================================================
+         LANDLORD LOGIN / SIGN UP BOX (Shown when logged out)
+         ====================================================================== -->
+    <section class="panel" id="landlord-auth-box">
+      <div class="panel-header">
+        <div>
+          <h2>Are You a Landlord Near Campus?</h2>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+            Sign in or create a free Landlord account to publish your building profile and update vacant rooms anytime.
+          </p>
+        </div>
+        <button type="button" id="demo-landlord-login-btn" class="btn btn-outline btn-sm">
+          ⚡ Instant Demo Landlord Login
+        </button>
+      </div>
+
+      <form id="landlord-auth-form" class="form-grid" style="align-items: end;" novalidate>
+        <div class="form-group">
+          <label for="auth-mode-select">Action</label>
+          <select id="auth-mode-select" class="form-control">
+            <option value="login">Login to Existing Profile</option>
+            <option value="signup">Create New Landlord Account</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="auth-email">Landlord Email *</label>
+          <input type="email" id="auth-email" class="form-control" placeholder="landlord@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Password (min 6 chars) *</label>
+          <input type="password" id="auth-password" class="form-control" placeholder="••••••" required />
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-block">Access Landlord Dashboard</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ======================================================================
+         LANDLORD OWNER DASHBOARD (Shown only when logged in)
+         ====================================================================== -->
+    <section class="panel" id="landlord-dashboard-box" style="display: none; border: 2px solid var(--primary-color);">
+      <div class="panel-header">
+        <div>
+          <h2>🛠️ Landlord Owner Dashboard</h2>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+            Logged in as <strong id="landlord-logged-email"></strong> — Only you can edit your building profile and vacant units.
+          </p>
+        </div>
+        <button type="button" id="landlord-logout-btn" class="btn btn-danger btn-sm">Log Out</button>
+      </div>
+
+      <form id="landlord-profile-form" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="ll-name">Landlord / In-Charge Name *</label>
+            <input type="text" id="ll-name" class="form-control" placeholder="e.g., Md. Habibur Rahman" required />
+          </div>
+          <div class="form-group">
+            <label for="ll-building">Building / Mess Name *</label>
+            <input type="text" id="ll-building" class="form-control" placeholder="e.g., Rahman Student Villa" required />
+          </div>
+          <div class="form-group">
+            <label for="ll-address">Full Location / Address *</label>
+            <input type="text" id="ll-address" class="form-control" placeholder="House #, Road #, Area & distance from campus" required />
+          </div>
+          <div class="form-group">
+            <label for="ll-map">Google Maps Link (Optional)</label>
+            <input type="url" id="ll-map" class="form-control" placeholder="https://maps.google.com/..." />
+          </div>
+          <div class="form-group">
+            <label for="ll-phone1">Primary WhatsApp / Mobile Number *</label>
+            <input type="tel" id="ll-phone1" class="form-control" placeholder="e.g., 01715001122" required />
+          </div>
+          <div class="form-group">
+            <label for="ll-phone2">Secondary / Caretaker Number (Optional)</label>
+            <input type="text" id="ll-phone2" class="form-control" placeholder="e.g., 01819001122 (Caretaker)" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Building Facilities (Tick all that apply)</label>
+            <div class="checkbox-group">
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="High-Speed Wi-Fi" /> High-Speed Wi-Fi</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="Line Gas" /> Line Gas</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="Filtered Water" /> Filtered Water</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="24/7 CCTV & Guard" /> 24/7 CCTV & Guard</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="IPS / Generator Backup" /> IPS / Generator Backup</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="Lift / Elevator" /> Lift / Elevator</label>
+              <label class="checkbox-pill"><input type="checkbox" name="ll-facility" value="Optional Meal System" /> Optional Meal System</label>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="ll-rules">Rules & Regulations</label>
+            <textarea id="ll-rules" class="form-control" placeholder="Gate closing time, visitor policy, advance deposit rules..."></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="ll-photos">Building / Room Photos (Optional, max 2 MB each)</label>
+            <input type="file" id="ll-photos" class="form-control" accept="image/*" multiple />
+          </div>
+        </div>
+
+        <!-- SUB-SECTION: MANAGE MULTIPLE VACANT UNITS -->
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: var(--bg-body); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <h3 style="font-size: var(--font-size-base); margin-bottom: 0.5rem;">🛏️ Manage Vacant Rooms / Flats Inside Your Building</h3>
+          <div class="form-grid" style="margin-bottom: var(--space-sm);">
+            <div class="form-group">
+              <label for="unit-room">Flat / Room Number</label>
+              <input type="text" id="unit-room" class="form-control" placeholder="e.g., Room 3B or Flat 4A" />
+            </div>
+            <div class="form-group">
+              <label for="unit-rent">Monthly Rent (BDT)</label>
+              <input type="number" id="unit-rent" class="form-control" placeholder="e.g., 4000" />
+            </div>
+            <div class="form-group">
+              <label for="unit-type">Unit Type</label>
+              <select id="unit-type" class="form-control">
+                <option value="Single Room">Single Room</option>
+                <option value="Shared Seat">Shared Seat</option>
+                <option value="Full Flat">Full Flat</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="unit-gender">Gender Preference</label>
+              <select id="unit-gender" class="form-control">
+                <option value="Male">Male Students</option>
+                <option value="Female">Female Students</option>
+                <option value="Any">Any</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="unit-status">Availability Status</label>
+              <select id="unit-status" class="form-control">
+                <option value="Available">Available</option>
+                <option value="Booked">Booked</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="unit-notes">Short Room Note</label>
+              <input type="text" id="unit-notes" class="form-control" placeholder="Attached bath, south window, etc." />
+            </div>
+          </div>
+          <button type="button" id="add-unit-btn" class="btn btn-outline btn-sm">+ Add Unit to Building List</button>
+
+          <div id="dashboard-units-list" style="margin-top: var(--space-sm);"></div>
+        </div>
+
+        <div style="margin-top: var(--space-md);">
+          <button type="submit" class="btn btn-primary">💾 Save Complete Profile & Units</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ======================================================================
+         PUBLIC STUDENT FILTER BAR
+         ====================================================================== -->
+    <section aria-label="Filter Landlord Profiles">
+      <div class="filter-bar">
+        <input type="search" id="landlord-search" class="form-control" placeholder="🔍 Search building name, road, or area..." />
+        <select id="filter-ll-availability" class="form-control">
+          <option value="All">All Profiles (Available & Full)</option>
+          <option value="Available">Has Available Units Only</option>
+        </select>
+        <select id="filter-ll-type" class="form-control">
+          <option value="All">All Unit Types</option>
+          <option value="Single Room">Single Room</option>
+          <option value="Shared Seat">Shared Seat</option>
+          <option value="Full Flat">Full Flat</option>
+        </select>
+        <select id="filter-ll-rent" class="form-control">
+          <option value="0">Any Monthly Rent</option>
+          <option value="3500">Up to ৳3,500 / mo</option>
+          <option value="5000">Up to ৳5,000 / mo</option>
+          <option value="8000">Up to ৳8,000 / mo</option>
+          <option value="15000">Up to ৳15,000 / mo</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- PUBLIC LANDLORD PROFILES GRID -->
+    <section id="landlords-listings-grid" class="grid-cards"></section>
+  </main>
+
+  <!-- DETAILED LANDLORD PROFILE MODAL -->
+  <div class="modal-backdrop" id="landlord-detail-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge badge-primary">Verified Landlord Profile</span>
+        <button type="button" id="close-landlord-modal" class="btn btn-outline btn-sm">✕ Close</button>
+      </div>
+      <div id="landlord-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       FOOTER (EDIT HERE: Change Team Contact Details, Email & University Name)
+       ======================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-title">Campus Bondhon — Team Bondhon</div>
+          <p style="font-size: var(--font-size-sm); color: #94a3b8; max-width: 380px;">
+            A student-first community hub connecting university peers to share books and notes, donate clothing with complete dignity, and find verified student housing near campus.
+          </p>
+        </div>
+        <div>
+          <div class="footer-title">Quick Sections</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Home Page</a></li>
+            <li><a href="study.html">Study Resources (Books & Notes)</a></li>
+            <li><a href="clothing.html">Clothing Resources (Anonymous Donation)</a></li>
+            <li><a href="landlords.html">Landlords Profile (Vacant Rooms & Flats)</a></li>
+          </ul>
+        </div>
+        <div>
+          <!-- EDIT HERE: Replace with your team's real email, phone, and university name -->
+          <div class="footer-title">Contact Team Bondhon</div>
+          <ul class="footer-links">
+            <li>📧 Email: teambondhon@university.edu.bd</li>
+            <li>💬 WhatsApp Support: +880 1700-000000</li>
+            <li>📍 Campus Hub: Student TSC, University Campus</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Campus Bondhon. Built with care by <strong>Team Bondhon</strong>.</span>
+        <span>Hosted on GitHub Pages • Powered by Firebase</span>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="js/landlords.js"></script>
+</body>
+</html>

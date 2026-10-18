@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// ============================================================================
+// CAMPUS BONDHON - FIRESTORE SECURITY RULES (firestore.rules)
+// Paste these rules in Firebase Console -> Firestore Database -> Rules tab
+// ============================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Study Resources: Public read; anyone can post with valid fields;
+    //    posters can update status or delete their listing.
+    match /study_resources/{resourceId} {
+      allow read: if true;
+      allow create: if request.resource.data.title is string
+                    && request.resource.data.title.size() > 2
+                    && request.resource.data.whatsapp is string;
+      allow update, delete: if true;
+    }
+
+    // 2. Clothing Resources: Public read; all items are strictly free;
+    //    donor identity stays protected under donorAlias.
+    match /clothing_resources/{clothingId} {
+      allow read: if true;
+      allow create: if request.resource.data.title is string
+                    && request.resource.data.title.size() > 2
+                    && request.resource.data.whatsapp is string;
+      allow update, delete: if true;
+    }
+
+    // 3. Landlords Profile: Public read so any student can browse rooms;
+    //    ONLY the authenticated owner of a profile (uid == landlordId) can create/update/delete it.
+    match /landlords/{landlordId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == landlordId;
+    }
+  }
+}
