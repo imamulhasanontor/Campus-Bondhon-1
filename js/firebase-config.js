@@ -3,15 +3,8 @@
  * CAMPUS BONDHON - FIREBASE CONFIGURATION (js/firebase-config.js)
  * Team Name: Bondhon | Project: Campus Bondhon
  * ============================================================================
- *
- * HOW TO SET UP FIREBASE:
- * 1. Go to https://console.firebase.google.com/ and create a free project.
- * 2. Click the Web icon (</>) to register your app "Campus Bondhon".
- * 3. Copy your firebaseConfig values from Firebase Console and replace the
- *    placeholder strings below.
- * 4. NOTE: Until you replace "YOUR_API_KEY" below, Campus Bondhon automatically
- *    runs in "Local Demo Mode" (using browser storage) so you can test every
- *    feature right away!
+ * Live Firebase connected: Authentication + Firestore + Storage.
+ * Every other file imports Firebase helpers from here.
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -20,7 +13,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
@@ -34,6 +29,10 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
+  limit,
+  onSnapshot,
+  increment,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
@@ -44,18 +43,19 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 // ============================================================================
-// EDIT HERE: PASTE YOUR FIREBASE CONFIG CREDENTIALS BELOW
+// FIREBASE CONFIG (Campus Bondhon project)
 // ============================================================================
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
+  apiKey: "AIzaSyBUszR1VVWp8m6kiSZKjuLRucnvEtow0qM",
+  authDomain: "campus-bondhon.firebaseapp.com",
+  projectId: "campus-bondhon",
+  storageBucket: "campus-bondhon.firebasestorage.app",
+  messagingSenderId: "217307689396",
+  appId: "1:217307689396:web:d67f85692db227110902e1",
+  measurementId: "G-2FHW77NNTF"
 };
 
-// Detect if the student has replaced the placeholder config yet
+// Detect if the placeholder config has been replaced
 export const IS_FIREBASE_CONFIGURED =
   firebaseConfig.apiKey !== "YOUR_API_KEY" &&
   !firebaseConfig.apiKey.includes("YOUR_");
@@ -88,6 +88,8 @@ export {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  updateProfile,
   collection,
   doc,
   addDoc,
@@ -98,6 +100,10 @@ export {
   deleteDoc,
   query,
   orderBy,
+  where,
+  limit,
+  onSnapshot,
+  increment,
   serverTimestamp,
   ref,
   uploadBytes,
