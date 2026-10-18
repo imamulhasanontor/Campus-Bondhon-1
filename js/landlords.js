@@ -4,7 +4,9 @@
  * Team Name: Bondhon | Project: Campus Bondhon
  * ============================================================================
  * Features:
- * - Landlord Sign Up / Login / Logout via Firebase Auth (with instant Demo Mode)
+ * - Landlord Sign Up / Login / Logout / Forgot Password via Firebase Auth
+ *   (every signup/login/logout is also written to Firestore: users + login_logs,
+ *   so the admin can watch them live on admin.html)
  * - Owner-only Landlord Dashboard to create/update Building Profile:
  *   Name, Building Name, Address, Google Maps URL, Contact Numbers, Facilities,
  *   Rules & Regulations, and Building Photos.
@@ -23,10 +25,15 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  updateProfile,
   collection,
   doc,
   setDoc,
-  getDocs
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  increment
 } from "./firebase-config.js";
 
 import {
@@ -142,14 +149,108 @@ async function loadLandlords() {
   renderLandlordsGrid();
 }
 
+// ---------------------------------------------------------------------------
+// LIVE USER TRACKING HELPERS (Firestore: users + login_logs)
+// ---------------------------------------------------------------------------
+let heartbeatTimer = null;
+let formAuthInProgress = false;
+
+function friendlyAuthError(err) {
+  const map = {
+    "auth/email-already-in-use": "This email is already registered. Switch to 'Login' instead.",
+    "auth/invalid-email": "That email address doesn't look valid.",
+    "auth/weak-password": "Password is too weak. Use at least 6 characters.",
+    "auth/invalid-credential": "Wrong email or password. Please try again.",
+    "auth/user-not-found": "No account found with this email.",
+    "auth/wrong-password": "Wrong email or password. Please try again.",
+    "auth/too-many-requests": "Too many attempts. Please wait a few minutes and try again.",
+    "auth/network-request-failed": "Network problem. Check your internet connection.",
+    "auth/operation-not-allowed": "Email/Password login is not enabled in Firebase Console yet.",
+    "auth/unauthorized-domain": "This website domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains)."
+  };
+  return map[err && err.code] || (err && err.message) || "Authentication failed.";
+}
+
+async function logActivity(type, user, name) {
+  if (!(IS_FIREBASE_CONFIGURED && db) || !user) return;
+  try {
+    await addDoc(collection(db, "login_logs"), {
+      uid: user.uid,
+      email: user.email || "",
+      name: name || user.displayName || "",
+      type, // "signup" | "login" | "logout"
+      userAgent: (navigator.userAgent || "").slice(0, 160),
+      at: serverTimestamp()
+    });
+  } catch (err) {
+    console.warn("Could not write login log:", err);
+  }
+}
+
+async function touchPresence(uid, online) {
+  if (!(IS_FIREBASE_CONFIGURED && db) || !uid) return;
+  try {
+    await setDoc(
+      doc(db, "users", uid),
+      { isOnline: online, lastSeen: serverTimestamp() },
+      { merge: true }
+    );
+  } catch (err) {
+    console.warn("Presence update failed:", err);
+  }
+}
+
+function startHeartbeat(uid) {
+  stopHeartbeat();
+  // While the page is open, refresh "lastSeen" every 60 seconds so the admin
+  // dashboard can tell who is really online right now.
+  heartbeatTimer = setInterval(() => touchPresence(uid, true), 60000);
+}
+
+function stopHeartbeat() {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
 function setupAuthListeners() {
   const loginForm = document.getElementById("landlord-auth-form");
   const demoLoginBtn = document.getElementById("demo-landlord-login-btn");
   const logoutBtn = document.getElementById("landlord-logout-btn");
+  const modeSelect = document.getElementById("auth-mode-select");
+  const forgotBtn = document.getElementById("forgot-password-btn");
+  const submitBtn = document.getElementById("auth-submit-btn");
+  const liveMode = IS_FIREBASE_CONFIGURED && auth && db;
 
-  if (IS_FIREBASE_CONFIGURED && auth) {
+  // The fake demo login only makes sense without a real Firebase connection
+  if (liveMode && demoLoginBtn) demoLoginBtn.style.display = "none";
+
+  // Show Name + Phone fields only in Sign Up mode
+  const syncModeFields = () => {
+    const isSignup = modeSelect && modeSelect.value === "signup";
+    document.querySelectorAll(".signup-only").forEach((el) => {
+      el.style.display = isSignup ? "" : "none";
+    });
+    if (forgotBtn) forgotBtn.style.display = isSignup ? "none" : "";
+    if (submitBtn) submitBtn.textContent = isSignup ? "Create Account" : "Access Landlord Dashboard";
+  };
+  if (modeSelect) {
+    modeSelect.addEventListener("change", syncModeFields);
+    syncModeFields();
+  }
+
+  if (liveMode) {
     onAuthStateChanged(auth, (user) => {
-      currentUser = user ? { uid: user.uid, email: user.email } : null;
+      currentUser = user ? { uid: user.uid, email: user.email, name: user.displayName || "" } : null;
+      if (user) {
+        // Page reload with an existing session: just refresh presence.
+        // (Explicit login/signup is recorded by the form handler below.)
+        if (!formAuthInProgress) touchPresence(user.uid, true);
+        startHeartbeat(user.uid);
+      } else {
+        stopHeartbeat();
+      }
       updateDashboardVisibility();
     });
   } else {
@@ -162,26 +263,14 @@ function setupAuthListeners() {
       e.preventDefault();
       const email = document.getElementById("auth-email").value.trim();
       const password = document.getElementById("auth-password").value;
-      const mode = document.getElementById("auth-mode-select").value; // "login" or "signup"
+      const mode = modeSelect ? modeSelect.value : "login"; // "login" or "signup"
 
       if (!email || password.length < 6) {
         showToast("Please enter a valid email and a password of at least 6 characters.", "error");
         return;
       }
 
-      if (IS_FIREBASE_CONFIGURED && auth) {
-        try {
-          if (mode === "signup") {
-            await createUserWithEmailAndPassword(auth, email, password);
-            showToast("Landlord account created! Fill out your building profile below.");
-          } else {
-            await signInWithEmailAndPassword(auth, email, password);
-            showToast("Logged in to Landlord Dashboard.");
-          }
-        } catch (err) {
-          showToast(err.message || "Authentication failed.", "error");
-        }
-      } else {
+      if (!liveMode) {
         // Local Demo Mode Login/Signup
         let existing = landlordsList.find((l) => l.email.toLowerCase() === email.toLowerCase());
         const uid = existing ? existing.uid : "landlord-" + Date.now();
@@ -189,6 +278,94 @@ function setupAuthListeners() {
         setLocalData(SESSION_KEY, currentUser);
         updateDashboardVisibility();
         showToast(`Signed in as ${email} (Demo Mode).`);
+        return;
+      }
+
+      // ---- Live Firebase mode ----
+      let name = "";
+      let phone = "";
+      if (mode === "signup") {
+        name = document.getElementById("auth-name").value.trim();
+        const phoneCheck = validatePhone(document.getElementById("auth-phone").value);
+        if (name.length < 2) {
+          showToast("Please enter your full name.", "error");
+          return;
+        }
+        if (!phoneCheck.valid) {
+          showToast(phoneCheck.error, "error");
+          return;
+        }
+        phone = phoneCheck.cleaned;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      formAuthInProgress = true;
+      try {
+        if (mode === "signup") {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(cred.user, { displayName: name });
+          await setDoc(doc(db, "users", cred.user.uid), {
+            uid: cred.user.uid,
+            email,
+            name,
+            phone,
+            role: "landlord",
+            createdAt: serverTimestamp(),
+            lastLoginAt: serverTimestamp(),
+            lastSeen: serverTimestamp(),
+            isOnline: true,
+            loginCount: 1
+          });
+          await logActivity("signup", cred.user, name);
+
+          currentUser = { uid: cred.user.uid, email, name };
+          const nameInput = document.getElementById("ll-name");
+          const phoneInput = document.getElementById("ll-phone1");
+          if (nameInput && !nameInput.value) nameInput.value = name;
+          if (phoneInput && !phoneInput.value) phoneInput.value = phone;
+          showToast("Account created! Fill out your building profile below.");
+        } else {
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          const profileUpdate = {
+            uid: cred.user.uid,
+            email: cred.user.email,
+            lastLoginAt: serverTimestamp(),
+            lastSeen: serverTimestamp(),
+            isOnline: true,
+            loginCount: increment(1)
+          };
+          if (cred.user.displayName) profileUpdate.name = cred.user.displayName;
+          await setDoc(doc(db, "users", cred.user.uid), profileUpdate, { merge: true });
+          await logActivity("login", cred.user, cred.user.displayName);
+          showToast("Logged in to Landlord Dashboard.");
+        }
+        loginForm.reset();
+        syncModeFields();
+      } catch (err) {
+        showToast(friendlyAuthError(err), "error");
+      } finally {
+        formAuthInProgress = false;
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+
+  if (forgotBtn) {
+    forgotBtn.addEventListener("click", async () => {
+      const email = document.getElementById("auth-email").value.trim();
+      if (!email) {
+        showToast("Type your email in the Email box first, then click 'Forgot password?'.", "error");
+        return;
+      }
+      if (!liveMode) {
+        showToast("Password reset needs live Firebase connection.", "error");
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showToast("Password reset link sent! Check your inbox (and spam folder).");
+      } catch (err) {
+        showToast(friendlyAuthError(err), "error");
       }
     });
   }
@@ -204,7 +381,14 @@ function setupAuthListeners() {
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
-      if (IS_FIREBASE_CONFIGURED && auth) {
+      if (liveMode) {
+        const user = auth.currentUser;
+        if (user) {
+          // Must be written BEFORE signOut, while we're still authenticated
+          await logActivity("logout", user, user.displayName);
+          await touchPresence(user.uid, false);
+        }
+        stopHeartbeat();
         await signOut(auth);
       }
       currentUser = null;
@@ -238,7 +422,7 @@ function populateDashboardForm() {
   if (!currentUser) return;
   const profile = landlordsList.find((l) => l.uid === currentUser.uid);
 
-  document.getElementById("ll-name").value = profile?.landlordName || "";
+  document.getElementById("ll-name").value = profile?.landlordName || currentUser.name || "";
   document.getElementById("ll-building").value = profile?.buildingName || "";
   document.getElementById("ll-address").value = profile?.address || "";
   document.getElementById("ll-map").value = profile?.mapLink || "";
@@ -374,7 +558,21 @@ async function saveLandlordProfile() {
   const facilities = Array.from(document.querySelectorAll("input[name='ll-facility']:checked")).map((cb) => cb.value);
   const existingProfile = landlordsList.find((l) => l.uid === currentUser.uid);
   const defaultImg = existingProfile?.images?.[0] || "assets/housing-default.jpg";
-  const images = await processImageFiles(photoFiles, "landlords", defaultImg);
+
+  let images;
+  try {
+    images = await processImageFiles(photoFiles, "landlords", defaultImg);
+  } catch (err) {
+    if (err && typeof err.code === "string" && err.code.startsWith("storage/")) {
+      // Firebase Storage isn't ready (not enabled / rules / billing) - don't block the profile
+      console.warn("Photo upload failed:", err);
+      showToast("Photo upload failed (Firebase Storage not ready). Saving profile with the default photo.", "error");
+      images = existingProfile?.images || [defaultImg];
+    } else {
+      showToast(err.message || "Could not process the selected photos.", "error");
+      return;
+    }
+  }
 
   const profileData = {
     uid: currentUser.uid,
@@ -392,16 +590,22 @@ async function saveLandlordProfile() {
     updatedAt: Date.now()
   };
 
-  if (IS_FIREBASE_CONFIGURED && db) {
-    await setDoc(doc(db, "landlords", currentUser.uid), profileData);
-  } else {
-    const idx = landlordsList.findIndex((l) => l.uid === currentUser.uid);
-    if (idx >= 0) {
-      landlordsList[idx] = profileData;
+  try {
+    if (IS_FIREBASE_CONFIGURED && db) {
+      await setDoc(doc(db, "landlords", currentUser.uid), profileData);
     } else {
-      landlordsList.unshift(profileData);
+      const idx = landlordsList.findIndex((l) => l.uid === currentUser.uid);
+      if (idx >= 0) {
+        landlordsList[idx] = profileData;
+      } else {
+        landlordsList.unshift(profileData);
+      }
+      setLocalData(STORAGE_KEY, landlordsList);
     }
-    setLocalData(STORAGE_KEY, landlordsList);
+  } catch (err) {
+    console.error("Saving landlord profile failed:", err);
+    showToast("Could not save profile: " + (err.message || "unknown error"), "error");
+    return;
   }
 
   await loadLandlords();
